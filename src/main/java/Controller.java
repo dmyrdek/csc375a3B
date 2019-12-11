@@ -50,9 +50,9 @@ public class Controller implements Initializable {
     private void createGrid(boolean firstRun) {
 
         if (firstRun) {
-            blockGrid = Main.blockGrid;
-            //blockGrid = new Grid();
-            //blockGrid.setBlockNeighbors();
+            //blockGrid = Main.blockGrid;
+            blockGrid = new Grid();
+            blockGrid.setBlockNeighbors();
             score.setText(blockGrid.getScore().toString());
         }
 

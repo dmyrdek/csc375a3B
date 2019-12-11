@@ -72,6 +72,7 @@ public class Solutions extends RecursiveAction {
                     move.setScore(clone.getScore());
                     moves.get(i).add(move);
 
+                    if (Main.role == 2){
                     try {
                         Socket socket = new Socket(Main.hostName, Main.portNumber);
 
@@ -79,10 +80,11 @@ public class Solutions extends RecursiveAction {
                         outStream.writeObject(move.toString());
 
                         socket.close();
-                        System.exit(0);
+                        //System.exit(0);
 
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
+                    }
                     }
 
                     //System.out.println(move.toString());

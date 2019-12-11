@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Grid implements Cloneable{
+public class Grid implements Cloneable, Serializable{
     private Blocks blocks;
     private Integer score;
 

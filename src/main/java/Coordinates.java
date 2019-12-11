@@ -1,4 +1,7 @@
-public class Coordinates implements Cloneable{
+
+import java.io.Serializable;
+
+public class Coordinates implements Cloneable, Serializable{
         private int x, y;
 
         public Coordinates(int x, int y) {

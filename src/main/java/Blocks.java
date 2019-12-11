@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Blocks implements Cloneable{
+public class Blocks implements Cloneable, Serializable{
     private Block[] blocks = new Block[25];
 
     public Block[] getList() {

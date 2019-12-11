@@ -18,15 +18,15 @@ import org.apache.commons.collections4.ListUtils;
 
 public class Main extends Application {
 
-    static final int portNumber = 2697;
+    static final int portNumber = 13188;
     static String hostName;
     public static Grid blockGrid;
+    static int role;
     private static ArrayList<Grid> clientGrids;
     private static ArrayList<Grid> gridsToSolve;
 
     public static void main(String[] args) throws CloneNotSupportedException {
         Scanner kb = new Scanner(System.in);
-        int role;
         System.out.println("Please type 1 to accept connections (server role)\nPress 2 to connect to another computer");
         role = Integer.parseInt(kb.nextLine());
         int requiredComputers = 0;
@@ -36,19 +36,21 @@ public class Main extends Application {
         if (role == 1) {
             blockGrid = new Grid();
             blockGrid.setBlockNeighbors();
-
-            Solutions newSolutions = new Solutions(blockGrid);
-
-            clientGrids = newSolutions.getNextGrids(blockGrid);
+            
+            new Thread(() -> launch(args)).start();
 
             System.out.println("Please enter the number of computers you wish to connect");
             requiredComputers = Integer.parseInt(kb.nextLine());
 
-            new Thread(() -> launch(args)).start();
 
             ServerSocket ss;
             try {
                 ss = new ServerSocket(portNumber);
+                
+                Solutions newSolutions = new Solutions(blockGrid);
+
+                clientGrids = newSolutions.getNextGrids(blockGrid);
+               
 
                 while (numConnections < requiredComputers) {
                     Socket socket = ss.accept();
@@ -57,10 +59,12 @@ public class Main extends Application {
 
                     int gridsSize = clientGrids.size();
                     int sizeToSplit = gridsSize/requiredComputers;
+                    
+                    List clientGridsList = clientGrids;
 
-                    List<List<Grid>> output = ListUtils.partition(clientGrids.subList(0,clientGrids.size()), sizeToSplit);
+                    List<List<Grid>> output = ListUtils.partition(clientGridsList, sizeToSplit);
 
-                    outputStream.writeObject(output.get(numConnections));
+                    outputStream.writeObject(new ArrayList(output.get(numConnections)));
 
                     numConnections++;
                     System.out.println("Client connected: " + numConnections + " / " + requiredComputers);
@@ -72,14 +76,12 @@ public class Main extends Application {
                 while (true) {
                     Socket solutionSocket = ss.accept();
                     ObjectInputStream inputStream = new ObjectInputStream(solutionSocket.getInputStream());
-                    System.out.println("\nFound a Solution!");
+                    //System.out.println("\nFound a Solution!");
 
-                    List<String> solutionFromClient = (List<String>) inputStream.readObject();
+                    String solutionFromClient = (String) inputStream.readObject();
 
-                    for (String step : solutionFromClient) {
-                        System.out.println(step);
-                    }
-
+                    System.out.println(solutionFromClient);
+                    
                     solutionSocket.close();
                 }
 
@@ -122,6 +124,7 @@ public class Main extends Application {
             System.out.println("Typed in invalid command.... Please relaunch");
 
         }
+        //launch(args);
 
     }
 

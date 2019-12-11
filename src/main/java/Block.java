@@ -1,4 +1,7 @@
-public class Block implements Cloneable {
+
+import java.io.Serializable;
+
+public class Block implements Cloneable, Serializable {
     private int color;
     private Coordinates coordinates;
     private boolean left = false, right = false, top = false, bottom = false;
