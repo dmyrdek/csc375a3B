@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+   <children>
+      <HBox alignment="CENTER" StackPane.alignment="CENTER">
+         <children>
+            <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
+               <children>
+                  <HBox alignment="CENTER">
+                     <children>
+                        <JFXButton fx:id="refresh" contentDisplay="CENTER" prefHeight="50.0" prefWidth="75.0" text=" ">
+                           <HBox.margin>
+                              <Insets right="75.0" />
+                           </HBox.margin>
+                           <graphic>
+                              <FontAwesomeIconView glyphName="RETWEET" size="20" />
+                           </graphic>
+                        </JFXButton>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Your Score: ">
+                           <font>
+                              <Font name="Helvetica Neue Bold" size="32.0" />
+                           </font>
+                        </Text>
+                        <Text fx:id="score" strokeType="OUTSIDE" strokeWidth="0.0" text="0">
+                           <font>
+                              <Font name="Helvetica Neue" size="32.0" />
+                           </font>
+                        </Text>
+                        <JFXButton fx:id="solve" contentDisplay="CENTER" prefHeight="50.0" prefWidth="75.0" text=" ">
+                           <graphic>
+                              <FontAwesomeIconView glyphName="WRENCH" size="20" />
+                           </graphic>
+                           <HBox.margin>
+                              <Insets left="75.0" />
+                           </HBox.margin>
+                        </JFXButton>
+                     </children>
+                  </HBox>
+                  <GridPane fx:id="grid" alignment="CENTER" gridLinesVisible="true" VBox.vgrow="ALWAYS">
+      </GridPane>
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </children>
+</StackPane>
