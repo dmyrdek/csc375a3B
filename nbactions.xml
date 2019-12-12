@@ -8,6 +8,7 @@
             <goals>
                 <goal>clean</goal>
                 <goal>javafx:run</goal>
+                
             </goals>
             <properties>
                 <exec.args>-classpath %classpath ${packageClassName}</exec.args>

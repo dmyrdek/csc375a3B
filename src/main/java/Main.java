@@ -22,8 +22,9 @@ public class Main extends Application {
     static String hostName;
     public static Grid blockGrid;
     static int role;
-    private static ArrayList<Grid> clientGrids;
+    private static ArrayList<Solutions> clientGrids;
     private static ArrayList<Grid> gridsToSolve;
+    private static ArrayList<Solutions> solutionsToSolve = new ArrayList<>();
 
     public static void main(String[] args) throws CloneNotSupportedException {
         Scanner kb = new Scanner(System.in);
@@ -49,7 +50,7 @@ public class Main extends Application {
                 
                 Solutions newSolutions = new Solutions(blockGrid);
 
-                clientGrids = newSolutions.getNextGrids(blockGrid);
+                clientGrids = newSolutions.getNextGrids(new Solutions(blockGrid));
                
 
                 while (numConnections < requiredComputers) {
@@ -104,8 +105,11 @@ public class Main extends Application {
                     Socket socket = new Socket(hostName, portNumber);
                     connected = true;
                     ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
-
-                    gridsToSolve = (ArrayList<Grid>) inStream.readObject();
+                    solutionsToSolve = (ArrayList<Solutions>) inStream.readObject();
+                    
+                    for (Solutions s: solutionsToSolve){
+                        gridsToSolve.add((Grid) s.grid.clone());
+                    }
 
                     Solutions clientSolutions = new Solutions(gridsToSolve);
 

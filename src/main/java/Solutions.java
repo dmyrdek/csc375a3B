@@ -1,5 +1,7 @@
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -7,12 +9,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.RecursiveAction;
 
-public class Solutions extends RecursiveAction {
-    private Grid grid;
-    private ArrayList<Grid> clientGrids = new ArrayList<>();
+public class Solutions extends RecursiveAction implements Serializable {
+
+    Socket socket;
+    public Grid grid;
+    private ArrayList<Solutions> clientSolutions = new ArrayList<>();
     private boolean done = false;
     int count = 0;
-    Map<Integer,ArrayList<Move>> moves = new HashMap<>();
+    Map<Integer, ArrayList<Move>> moves = new HashMap<>();
     int blocksLeft = 0;
     private ArrayList<Integer> previousColors = new ArrayList<>();
 
@@ -23,44 +27,57 @@ public class Solutions extends RecursiveAction {
             e.printStackTrace();
         }
 
-        for (int i = 0; i<25; i++){
-            moves.put(i,new ArrayList<>());
+        for (int i = 0; i < 25; i++) {
+            moves.put(i, new ArrayList<>());
         }
     }
 
     public Solutions(ArrayList<Grid> grids) {
+        if (Main.role == 2) {
+            try {
+                socket = new Socket(Main.hostName, Main.portNumber);
+
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+
         try {
-            for (Grid g : grids){
-                clientGrids.add((Grid) g.clone());
+            for (Grid g : grids) {
+                clientSolutions.add(new Solutions((Grid) g.clone()));
             }
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
 
-        for (int i = 0; i<25; i++){
-            moves.put(i,new ArrayList<>());
+        for (int i = 0; i < 25; i++) {
+            moves.put(i, new ArrayList<>());
         }
     }
 
     @Override
     protected void compute() {
         try {
-            if (clientGrids.isEmpty()) {
-                this.solve(getNextGrids(grid));
-            }else{
-                this.solve(clientGrids);
+            if (clientSolutions.isEmpty()) {
+                if (!done) {
+                this.solve(getNextGrids(new Solutions(grid)));
+                }
+            } else {
+                if (!done) {
+                this.solve(clientSolutions);
+            }
             }
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
     }
-
-    public ArrayList<Grid> getNextGrids(Grid g) throws CloneNotSupportedException {
-        ArrayList<Grid> grids = new ArrayList<>();
+    
+     public ArrayList<Solutions> getNextGrids(Solutions g) throws CloneNotSupportedException {
+        ArrayList<Solutions> grids = new ArrayList<>();
 
         for (int i = 0; i < 25; i++) {
-            if (g.getBlocks().getList()[i].getColor() != 3) {
-                Grid clone = (Grid) g.clone();
+            if (g.grid.getBlocks().getList()[i].getColor() != 3) {
+                Grid clone = (Grid) g.grid.clone();
                 Block temp = clone.getBlocks().getList()[i];
                 ArrayList<Block> tempNeighbors = clone.getBlockNeighbors(temp, new ArrayList<>());
 
@@ -71,42 +88,36 @@ public class Solutions extends RecursiveAction {
                     clone.removeBlocks(tempNeighbors);
                     move.setScore(clone.getScore());
                     moves.get(i).add(move);
+                    System.out.println(move.toString());
 
-                    if (Main.role == 2){
-                    try {
-                        Socket socket = new Socket(Main.hostName, Main.portNumber);
+                    if (Main.role == 2) {
+                        try {
+                            ObjectOutputStream outStream = new ObjectOutputStream(socket.getOutputStream());
+                            outStream.writeObject(move.toString());
 
-                        ObjectOutputStream outStream = new ObjectOutputStream(socket.getOutputStream());
-                        outStream.writeObject(move.toString());
-
-                        socket.close();
-                        //System.exit(0);
-
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
-                    }
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                        }
                     }
 
-                    //System.out.println(move.toString());
-
-
-                    grids.add((Grid) clone.clone());
+                    new Solutions((Grid) clone.clone()).fork();
                 }
             }
         }
 
+
         return grids;
     }
 
-    public void solve(ArrayList<Grid> grids) throws CloneNotSupportedException {
+    public void solve(ArrayList<Solutions> grids) throws CloneNotSupportedException {
         while (!done) {
             if (!grids.isEmpty()) {
                 ArrayList<Integer> currentColors = new ArrayList<>();
 
-                for (Grid g : grids) {
+                for (Solutions s : grids) {
                     int blocks = 0;
                     count++;
-                    for (Block block : g.getBlocks().getList()) {
+                    for (Block block : s.grid.getBlocks().getList()) {
                         if (block.getColor() == 3) {
                             ++blocks;
                         } else {
@@ -128,23 +139,28 @@ public class Solutions extends RecursiveAction {
                         blocksLeft++;
                     }
 
-                    System.out.println("Solving grid: " + count + " Score: " + g.getScore() + "   blocks left: " + (25 - blocks));
-                    solve(getNextGrids(g));
+                    System.out.println("Solving grid: " + count + " Score: " + s.grid.getScore() + "   blocks left: " + (25 - blocks));
+                    solve(getNextGrids(s));
                 }
             } else{
                 break;
             }
         }
-        /*for (Map.Entry<Integer,ArrayList<Move>> entry : moves.entrySet()){
-            for (Move m: entry.getValue()) {
-                System.out.println(m);
-            }
-        }*/
 
+        if (Main.role == 2 && done) {
+            try {
+                socket.close();
+                System.exit(0);
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
     }
 }
 
-class Move{
+
+class Move {
+
     String color;
     int size;
     int count;
@@ -153,18 +169,18 @@ class Move{
     int y;
 
     public Move(int c, int size, int x, int y, int count) {
-        if (c == 0){
+        if (c == 0) {
             color = "red";
-        } else if(c == 1){
+        } else if (c == 1) {
             color = "blue";
-        } else if(c == 2){
+        } else if (c == 2) {
             color = "green";
         }
 
         this.size = size;
 
-        this.x =x;
-        this.y =y;
+        this.x = x;
+        this.y = y;
 
         this.count = count;
     }
